@@ -6,7 +6,7 @@ package main
 
 import (
 	// "flag"
-	// "log"
+	"log"
 	"net/http"
 	// "text/template"
 
@@ -36,7 +36,7 @@ import (
 // }
 
 
-var hub = newHub()
+// var hub = newHub()
 
 // func hello() http.HandlerFunc {
 
@@ -56,18 +56,82 @@ var hub = newHub()
 // }
 
 
-func hello() http.HandlerFunc {
+// func hello() http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		serveWs(hub, w, r)
+// 	}
+// }
+
+
+func wsHub() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		var (
+			hub *Hub
+			err error
+		)
+
+		hubId := r.URL.Query().Get("hubId")
+
+		if (hubId == "") {
+			hubId = "hub000"
+		}
+
+		log.Println("wsHub,  hub id:")
+		log.Println(hubId)
+		log.Println("end wsHub.")
+
+		hub = getHub(hubId)
+
+		if (hub == nil) {
+			hub, err = initializeHub(hubId)
+
+			if err != nil {
+				log.Println(err)
+				return
+			}
+
+			if (hub == nil) {
+
+				log.Println("hub nil")
+				return
+			}
+
+		}
+
 		serveWs(hub, w, r)
 	}
 }
 
 
+func test() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		hubId := r.URL.Query().Get("hubId")
+
+		log.Println("test,  hub id:")
+		log.Println(hubId)
+		log.Println("end wsHub.")
+	}
+}
+
+
+func test2() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		id := r.URL.Query().Get("id")
+
+		log.Println("test2,  hub id:")
+		log.Println(id)
+		log.Println("end wsHub.")
+	}
+}
+
 
 func main() {
 	// flag.Parse()
 	// hub := newHub()
-	go hub.run()
+	// go hub.run()
 	// http.HandleFunc("/", serveHome)
 	// http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 	// 	serveWs(hub, w, r)
@@ -82,7 +146,15 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.Static("./public"))
-	e.GET("/ws", standard.WrapHandler(http.HandlerFunc(hello())))
+	//
+	// e.GET("/ws", standard.WrapHandler(http.HandlerFunc(hello())))
+	// e.GET("/ws/:hubId", standard.WrapHandler(http.HandlerFunc(wsHub())))
+	e.GET("/ws", standard.WrapHandler(http.HandlerFunc(wsHub())))
+
+	e.GET("/test", standard.WrapHandler(http.HandlerFunc(test())))
+	e.GET("/test2/:id", standard.WrapHandler(http.HandlerFunc(test2())))
+
+
 	e.Run(standard.New(":1323"))
 
 }

@@ -30,21 +30,33 @@ window.onload = function () {
 
     if (window["WebSocket"]) {
 
+        var hub_id = prompt("请输入hub id", "hub001");
+
+        if (hub_id==null || hub_id=="") {
+
+            hub_id = 'hub_id';
+        }
+
 
         var loc = window.location;
         var uri = 'ws:';
 
         if (loc.protocol === 'https:') {
-          uri = 'wss:';
+            uri = 'wss:';
         }
-        uri += '//' + loc.host + '/ws';
+
+        uri += '//' + loc.host + '/ws?hubId=' + hub_id;
+
+        // uri += '//' + loc.host + '/ws/h001';
+
 
 
         conn = new WebSocket(uri);
 
         conn.onopen = function() {
             var item = document.createElement("div");
-            item.innerHTML = "ws connected.";
+            // item.innerHTML = "ws connected. hub:" + hub_id;
+            item.innerHTML = "ws connected!";
             appendLog(item);
         }
 
@@ -63,6 +75,7 @@ window.onload = function () {
                 appendLog(item);
             }
         };
+
     } else {
         var item = document.createElement("div");
         item.innerHTML = "<b>Your browser does not support WebSockets.</b>";

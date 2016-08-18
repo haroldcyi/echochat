@@ -4,6 +4,12 @@
 
 package main
 
+import (
+	"log"
+)
+
+
+
 // hub maintains the set of active clients and broadcasts messages to the
 // clients.
 type Hub struct {
@@ -51,3 +57,87 @@ func (h *Hub) run() {
 		}
 	}
 }
+
+
+/////////////////////////// by harold
+
+// Pool of active hubs.
+var hubs = make(map[string]*Hub)
+
+
+// Fetch a room record from the DB and initialize it in memory.
+func initializeHub(id string) (*Hub, error) {
+	// data := struct {
+	// 	Password []byte `redis:"password"`
+	// }{}
+
+	// db := dbPool.Get()
+	// defer db.Close()
+
+	// exists, err := db.GetMap(config.CachePrefixRoom+id, &data)
+	// if err != nil {
+	// 	return nil, errors.New("Error loading room")
+	// } else if !exists {
+	// 	return nil, nil
+	// }
+
+	// hubs[id] = &Hub{
+	// 	Id:             id,
+	// 	password:       data.Password,
+	// 	timestamp:      time.Now(),
+	// 	broadcastQueue: make(chan []byte),
+	// 	register:       make(chan *Peer),
+	// 	unregister:     make(chan *Peer),
+	// 	stop:           make(chan int),
+	// 	peers:          make(map[*Peer]bool),
+	// 	counter:        1,
+	// }
+
+	hubs[id] = newHub()
+
+	log.Println("hub id...")
+	log.Println(id)
+	log.Println("end.")
+
+	// Hub is loaded, start it.
+	go hubs[id].run()
+
+	return hubs[id], nil
+}
+
+
+
+
+// Get an initialized hub by id.
+func getHub(id string) *Hub {
+	hub, exists := hubs[id]
+
+	if exists {
+		return hub
+	} else {
+		return nil
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
